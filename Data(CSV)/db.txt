@@ -1,0 +1,219 @@
+--TABLES--------------------------------------------------
+
+
+
+--Create gender enum
+Create type gend as enum ('male','female');
+
+--Create tables
+Create table Member (
+ email varchar(30) PRIMARY KEY CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
+ firstName varchar(15),
+ secondName varchar(20),
+ thePasswrd varchar(15),
+ subscriptionExpiry date,
+ dateOfBirth date,
+ country varchar(20),
+ postalCode  int ,
+ gender gend,
+ lastLogin date
+ );
+
+--CREATE MSG
+Create table msg (
+msgID smallint check(msgID>0) primary key,
+dateSent date,
+theSubject varchar(40),
+theText varchar(4000),
+sender_email varchar(30) references member (email) match full ,
+receiver_email varchar (30)references member (email) match full
+);
+
+--CREATE INVITATION
+create type statuse as enum('pending','accepted','rejected','default_none');
+Create table invitation (
+invitationID smallint Check(invitationID>0) PRIMARY KEY,
+dateSent date,
+theStatus statuse,
+sender_email varchar(30) references member (email) match full   ,
+receiver_email varchar(30) references member (email) match full
+
+);
+
+--create recommREQUEST
+create type stat as enum ('pending','replied','defaultPending');
+
+create table recommendation_request(
+requestID smallint check(requestID >0) primary key,
+dateSent date,
+theStatus stat,
+for_email varchar(30),
+sender_email varchar(30) references member (email) match full,
+receiver_email varchar(30)references member (email) match full
+);
+
+
+--create recommMSG
+create table recommendation_msg (
+recommendationMsgID smallint check(recommendationMsgID>0) primary key,
+dateSent date,
+description varchar(4000),
+email varchar(30) references member (email) match full,
+requestID smallint references recommendation_request (requestID) match full
+);
+
+---
+
+---
+
+--create endorses
+create table endorses (
+email varchar(30) references member (email) match full ,
+recomended_email varchar(30)  references member (email) match full,
+skills varchar(600),
+datePost date,
+Primary key (email,recomended_email)
+);
+
+
+--create additional_info
+create table additional_info (
+additionalInfoID smallint check (additionalInfoID>0) primary key,
+associations varchar(200),
+awards varchar(200),
+email varchar(30) references member (email) match full
+);
+
+--create connects
+create table connects (
+email varchar(30)  references member (email) match full,
+connectedWith_email varchar(30)  references member (email) match full,
+typee varchar(30),
+theComment varchar(300),
+dateOfJoin date,
+Primary key(email,connectedWith_email)
+);
+
+--create category
+create table category (
+categoryID int check(categoryId>0) primary key,
+name varchar(45)
+);
+
+--create question
+create table question (
+questionId smallint check(questionId >0) primary key,
+question varchar(50),
+datePosted date,
+email varchar(30) references member (email) match full,
+categoryID int references category (categoryID) match full
+);
+
+--create answer
+create table answer (
+answerID smallint check(answerID>0) primary key,
+answer varchar(1000),
+datePosted date,
+questionID smallint references question (questionID) match full,
+email varchar(30) references member (email) match full
+);
+
+--create article
+create table article (
+articleID smallint check (articleID>0) primary key,
+title varchar(30),
+categoryID int references category (categoryID) match full,
+theText varchar(2000),
+datePosted date,
+email varchar(30) references member(email) match full
+);
+
+--create article_comment
+create table article_comment (
+commentId smallint check (commentId>0) primary key,
+theComment varchar(1000),
+datePosted date,
+articleID smallint references article (articleID) match full,
+email varchar(30) references member (email) match full
+);
+
+--ENUM
+create type swc as enum ('none','remoted_work','defaultnone');
+
+--create table advertisement
+create table advertisement (
+advertisementId smallint check(advertisementID>0) primary key,
+salary int,
+jobType varchar(15),
+industry varchar(25),
+eduLevel varchar(20),
+specialWorkCapability swc,
+title varchar(100),
+thelocation varchar (50),
+postalCode int check(postalCode>0),--mediumint?,
+country varchar(20),
+datePosted date,
+email varchar (30) references member (email) match full
+);
+
+--create table job_seek
+create table job_seek (
+advertisementId smallint references advertisement(advertisementID) match full,
+personalDescription varchar (2000)
+);
+
+---create table summary 
+
+create table summary (
+theHeadline varchar(30),
+summary varchar(600),
+specialWorkCapability swc,
+categoryId int references category (categoryID) match full,
+email varchar(30) references member (email) match full
+);
+
+--create table job_offer
+create table job_offer (
+advertisementId smallint references advertisement (advertisementID) match full,
+jobDescription varchar(2000),
+fromAge int check(fromAge>0),
+toAge int check(toAge>fromAge),
+company varchar(100),
+companyURL varchar(30)
+);
+
+ 
+--create EXPERIENCE
+
+create type workst as enum('past','current','defaultPast');
+
+create table experience (
+experienceID smallint check(experienceID>0) primary key,
+company varchar(100),
+workStatus workst,
+title varchar(30),
+description varchar(400),
+fromYear date ,
+toYear date, 
+email varchar(30) references member (email) match full
+);
+
+
+
+--Education
+create table education (
+educationID smallint check(educationID>0) primary key,
+country varchar(20),
+school varchar(30),
+eduLevel varchar(30),
+categoryId int references category(categoryId) match full,
+fromYear date,
+toYear date
+);
+
+--member_intrests
+create table member_interests (
+memberID varchar(30) references member(email) match full,
+interestID int,
+Primary key (memberID,interestID)
+);
